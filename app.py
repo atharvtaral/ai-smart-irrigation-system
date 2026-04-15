@@ -1,5 +1,4 @@
 import streamlit as st
-import streamlit.components.v1 as components
 
 # 1. Page Configuration
 st.set_page_config(
@@ -8,10 +7,13 @@ st.set_page_config(
     layout="wide"
 )
 
-# 2. Read your HTML file
-with open("Smart_Irrigation_Updated.html", "r", encoding="utf-8") as f:
-    html_data = f.read()
+# 2. Path to your HTML file
+# Streamlit Cloud var file path direct vaparta yeto
+html_file_path = "Smart_Irrigation_Updated.html"
 
-# 3. Render the HTML content
-# We use a large height to ensure your full report is visible
-components.html(html_data, height=2500, scrolling=True)
+# 3. Use st.logo or title if needed
+st.title("Smart Irrigation Project Report")
+
+# 4. Use st.iframe (Streamlit's new standard for 2026)
+# Height tumchya report nusar adjust kara
+st.iframe(html_file_path, height=2500, scrolling=True)
