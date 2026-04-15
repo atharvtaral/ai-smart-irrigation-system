@@ -7,13 +7,21 @@ st.set_page_config(
     layout="wide"
 )
 
-# 2. Path to your HTML file
-# Streamlit Cloud var file path direct vaparta yeto
-html_file_path = "Smart_Irrigation_Updated.html"
+# 2. Function to safely load the HTML
+def load_html(file_name):
+    try:
+        with open(file_name, "r", encoding="utf-8") as f:
+            return f.read()
+    except FileNotFoundError:
+        return None
 
-# 3. Use st.logo or title if needed
-st.title("Smart Irrigation Project Report")
+# 3. Path to your project file
+html_content = load_html("Smart_Irrigation_Updated.html")
 
-# 4. Use st.iframe (Streamlit's new standard for 2026)
-# Height tumchya report nusar adjust kara
-st.iframe(html_file_path, height=2500, scrolling=True)
+if html_content:
+    # Use st.components.v1.html as a fallback if st.iframe has path issues
+    # but wrap it in a container for better display
+    st.components.v1.html(html_content, height=2500, scrolling=True)
+else:
+    st.error("Error: 'Smart_Irrigation_Updated.html' not found in the repository.")
+    st.info("Please ensure the filename matches exactly (including uppercase/lowercase).")
