@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI-Based Smart Irrigation & Monitoring System</title>
+<style>
+  /* LOGIN OVERLAY */
+  #login-overlay {
+    position: fixed; inset: 0;
+    background: linear-gradient(135deg, #0D4F1C 0%, #1A7A34 60%, #00897B 100%);
+    z-index: 9999;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .login-box {
+    background: white;
+    border-radius: 16px;
+    padding: 40px 44px;
+    width: 100%; max-width: 440px;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.35);
+    text-align: center;
+  }
+  .login-box .login-icon { font-size: 3rem; margin-bottom: 8px; }
+  .login-box h2 { color: #0D4F1C; font-size: 1.3rem; font-weight: 800; margin-bottom: 4px; }
+  .login-box .login-sub { font-size: 12px; color: #4A5568; margin-bottom: 24px; letter-spacing: 0.5px; }
+  .login-box label { display: block; text-align: left; font-size: 12px; font-weight: 700; color: #0D4F1C; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.8px; }
+  .login-box input {
+    width: 100%; padding: 11px 14px; border: 2px solid #A8D5A2;
+    border-radius: 8px; font-size: 14px; margin-bottom: 16px;
+    outline: none; transition: border 0.2s; font-family: inherit;
+  }
+  .login-box input:focus { border-color: #00897B; }
+  .login-btn {
+    width: 100%; padding: 13px; background: linear-gradient(135deg, #0D4F1C, #00897B);
+    color: white; border: none; border-radius: 8px; font-size: 15px;
+    font-weight: 700; cursor: pointer; letter-spacing: 0.5px;
+    transition: opacity 0.2s;
+  }
+  .login-btn:hover { opacity: 0.9; }
+  .login-err { color: #C62828; font-size: 12px; margin-top: -10px; margin-bottom: 12px; display: none; }
+  #login-overlay.hidden { display: none; }
+</style>
+<style>
+  :root {
+    --dark-green: #0D4F1C;
+    --green: #1A7A34;
+    --light-green: #4CAF50;
+    --mint: #A8D5A2;
+    --teal: #00897B;
+    --accent: #FF6B35;
+    --white: #FFFFFF;
+    --off-white: #F5FAF5;
+    --dark-gray: #1E2020;
+    --med-gray: #4A5568;
+    --light-gray: #E8F5E9;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Segoe UI', Calibri, Arial, sans-serif;
+    background: var(--off-white);
+    color: var(--dark-gray);
+    line-height: 1.6;
+  }
+
+  /* HERO */
+  .hero {
+    background: linear-gradient(135deg, var(--dark-green) 0%, var(--green) 60%, var(--teal) 100%);
+    color: white;
+    padding: 60px 40px 50px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -80px; right: -80px;
+    width: 320px; height: 320px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 50%;
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: -100px; left: -60px;
+    width: 250px; height: 250px;
+    background: rgba(76,175,80,0.15);
+    border-radius: 50%;
+  }
+  .hero-badge {
+    display: inline-block;
+    background: var(--accent);
+    color: white;
+    padding: 6px 18px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+  .hero h1 {
+    font-size: 2.6rem;
+    font-weight: 800;
+    line-height: 1.2;
+    margin-bottom: 14px;
+    max-width: 750px;
+  }
+  .hero .subtitle {
+    font-size: 1.1rem;
+    color: var(--mint);
+    max-width: 680px;
+    margin-bottom: 28px;
+  }
+  .hero-tags {
+    display: flex; gap: 10px; flex-wrap: wrap;
+  }
+  .tag {
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+    color: white;
+    padding: 5px 14px;
+    border-radius: 14px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .meta-bar {
+    display: flex; gap: 30px; margin-top: 30px; flex-wrap: wrap;
+  }
+  .meta-item { display: flex; flex-direction: column; }
+  .meta-item .label { font-size: 11px; color: var(--mint); text-transform: uppercase; letter-spacing: 1px; }
+  .meta-item .value { font-size: 14px; font-weight: 600; color: white; }
+
+  /* NAV */
+  nav {
+    background: var(--dark-green);
+    padding: 0 40px;
+    position: sticky; top: 0; z-index: 100;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  }
+  nav ul { list-style: none; display: flex; gap: 0; overflow-x: auto; }
+  nav ul li a {
+    display: block;
+    padding: 14px 18px;
+    color: var(--mint);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s;
+  }
+  nav ul li a:hover { color: white; border-bottom-color: var(--accent); }
+
+  /* MAIN LAYOUT */
+  .container { max-width: 1100px; margin: 0 auto; padding: 40px 30px; }
+  .section { margin-bottom: 50px; }
+  .section-header {
+    display: flex; align-items: center; gap: 14px;
+    margin-bottom: 24px;
+    border-left: 5px solid var(--green);
+    padding-left: 16px;
+  }
+  .section-num {
+    background: var(--green);
+    color: white;
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 700;
+  }
+  .section-header h2 {
+    font-size: 1.55rem;
+    color: var(--dark-green);
+    font-weight: 700;
+  }
+
+  /* CARDS */
+  .card {
+    background: white;
+    border-radius: 10px;
+    padding: 22px 26px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+    border: 1px solid var(--mint);
+    margin-bottom: 16px;
+  }
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+  }
+  .card-sm {
+    background: white;
+    border-radius: 10px;
+    padding: 18px 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    border-left: 5px solid var(--green);
+  }
+  .card-sm h4 {
+    font-size: 14px;
+    color: var(--dark-green);
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .card-sm p { font-size: 13px; color: var(--med-gray); }
+
+  /* STAT BOXES */
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .stat-box {
+    border-radius: 10px;
+    padding: 22px;
+    color: white;
+    text-align: center;
+  }
+  .stat-box .num { font-size: 2.2rem; font-weight: 800; line-height: 1; }
+  .stat-box .lbl { font-size: 12px; opacity: 0.85; margin-top: 5px; }
+
+  /* TABLE */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin-bottom: 16px;
+  }
+  thead th {
+    background: var(--dark-green);
+    color: white;
+    padding: 10px 14px;
+    text-align: left;
+    font-weight: 600;
+  }
+  tbody tr:nth-child(even) { background: var(--light-gray); }
+  tbody td { padding: 9px 14px; border-bottom: 1px solid #ddd; }
+  .good { color: var(--green); font-weight: 700; }
+
+  /* FLOW */
+  .flow {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 16px 0;
+  }
+  .flow-step {
+    background: var(--dark-green);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .flow-arrow { color: var(--accent); font-size: 18px; font-weight: 700; }
+
+  /* CNN ARCH */
+  .cnn-arch {
+    display: flex;
+    gap: 6px;
+    align-items: stretch;
+    overflow-x: auto;
+    padding: 10px 0;
+  }
+  .cnn-block {
+    min-width: 100px;
+    border-radius: 8px;
+    padding: 14px 10px;
+    color: white;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* SENSOR GRID */
+  .sensor-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 14px;
+  }
+  .sensor-card {
+    background: white;
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    border-top: 4px solid var(--green);
+  }
+  .sensor-card .icon { font-size: 2rem; margin-bottom: 8px; }
+  .sensor-card h4 { font-size: 13px; font-weight: 700; color: var(--dark-green); margin-bottom: 4px; }
+  .sensor-card p { font-size: 12px; color: var(--med-gray); }
+
+  /* COMPARISON TABLE */
+  .compare-tbl thead th:first-child { background: var(--med-gray); }
+  .compare-tbl thead th:nth-child(2) { background: var(--med-gray); }
+  .compare-tbl thead th:nth-child(3) { background: var(--green); }
+  .compare-good { color: var(--green); font-weight: 700; }
+  .compare-bad { color: #C62828; }
+
+  /* ALERT BOX */
+  .alert {
+    background: var(--light-gray);
+    border-left: 5px solid var(--accent);
+    padding: 14px 20px;
+    border-radius: 0 8px 8px 0;
+    margin: 16px 0;
+    font-size: 14px;
+  }
+  .alert strong { color: var(--accent); }
+
+  /* FOOTER */
+  footer {
+    background: var(--dark-green);
+    color: var(--mint);
+    text-align: center;
+    padding: 28px;
+    font-size: 13px;
+  }
+  footer strong { color: white; }
+
+  ul.styled { padding-left: 20px; }
+  ul.styled li { margin-bottom: 6px; font-size: 14px; color: var(--med-gray); }
+
+  .lit-paper {
+    background: white;
+    border-radius: 8px;
+    padding: 16px 20px;
+    border-left: 5px solid var(--teal);
+    margin-bottom: 12px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+  }
+  .lit-paper .year { background: var(--teal); color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; }
+  .lit-paper .gap { font-size: 12px; color: var(--accent); margin-top: 4px; }
+
+  @media (max-width: 600px) {
+    .hero h1 { font-size: 1.8rem; }
+    nav ul li a { padding: 12px 10px; font-size: 11px; }
+    .container { padding: 20px 14px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- LOGIN OVERLAY -->
+<div id="login-overlay">
+  <div class="login-box">
+    <div class="login-icon">🌱</div>
+    <h2>AI-Based Smart Irrigation System</h2>
+    <p class="login-sub">Project Review III &nbsp;·&nbsp; Please enter your details to continue</p>
+    <label for="l-name">Full Name</label>
+    <input type="text" id="l-name" placeholder="Enter your full name" />
+    <label for="l-phone">Phone Number</label>
+    <input type="tel" id="l-phone" placeholder="Enter your phone number" />
+    <label for="l-date">Today's Date</label>
+    <input type="date" id="l-date" />
+    <p class="login-err" id="login-err">⚠️ Please fill in all fields.</p>
+    <button class="login-btn" onclick="doLogin()">Open Project Report →</button>
+  </div>
+</div>
+
+<script>
+  // Pre-fill today's date
+  document.getElementById('l-date').value = new Date().toISOString().split('T')[0];
+
+  function doLogin() {
+    const name = document.getElementById('l-name').value.trim();
+    const phone = document.getElementById('l-phone').value.trim();
+    const date = document.getElementById('l-date').value;
+    const err = document.getElementById('login-err');
+    if (!name || !phone || !date) { err.style.display = 'block'; return; }
+    err.style.display = 'none';
+
+    // Format date nicely
+    const d = new Date(date);
+    const formatted = d.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
+
+    // Update hero badge and meta
+    document.getElementById('hero-badge').textContent = 'Project Review III · ' + formatted;
+    document.getElementById('user-name-display').textContent = name;
+    document.getElementById('user-phone-display').textContent = phone;
+    document.getElementById('user-date-display').textContent = formatted;
+    document.getElementById('footer-date').textContent = formatted;
+
+    document.getElementById('login-overlay').classList.add('hidden');
+  }
+</script>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge" id="hero-badge">Project Review III · 16 April 2026</div>
+  <h1>AI-Based Smart Irrigation<br>and Monitoring System</h1>
+  <p class="subtitle">An integrated IoT + Convolutional Neural Network + Agentic AI solution for intelligent precision agriculture and automated field monitoring.</p>
+  <div class="hero-tags">
+    <span class="tag">IoT</span>
+    <span class="tag">CNN</span>
+    <span class="tag">Raspberry Pi 4</span>
+    <span class="tag">GPT-4o</span>
+    <span class="tag">TensorFlow / Keras</span>
+    <span class="tag">ThingsBoard</span>
+    <span class="tag">OpenCV</span>
+    <span class="tag">Agentic AI</span>
+    <span class="tag">MCP3008 ADC</span>
+  </div>
+  <div class="meta-bar">
+    <div class="meta-item"><span class="label">University</span><span class="value">Savitribai Phule Pune University (SPPU)</span></div>
+    <div class="meta-item"><span class="label">College</span><span class="value">Adsul's Technical Campus, Chas, Ahilyanagar</span></div>
+    <div class="meta-item"><span class="label">Guide</span><span class="value">Prof. P. B. Chandane</span></div>
+    <div class="meta-item"><span class="label">Dept</span><span class="value">Computer Engineering</span></div>
+    <div class="meta-item"><span class="label">Presenter</span><span class="value" id="user-name-display">—</span></div>
+    <div class="meta-item"><span class="label">Phone</span><span class="value" id="user-phone-display">—</span></div>
+    <div class="meta-item"><span class="label">Date</span><span class="value" id="user-date-display">—</span></div>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <ul>
+    <li><a href="#intro">Introduction</a></li>
+    <li><a href="#literature">Literature Survey</a></li>
+    <li><a href="#problem">Problem &amp; Objective</a></li>
+    <li><a href="#existing">Existing System</a></li>
+    <li><a href="#proposed">Proposed System</a></li>
+    <li><a href="#architecture">Architecture</a></li>
+    <li><a href="#cnn">CNN Model</a></li>
+    <li><a href="#ai">Agentic AI</a></li>
+    <li><a href="#hardware">Hardware</a></li>
+    <li><a href="#hardware-deep-dive">HW Deep Dive</a></li>
+    <li><a href="#performance">Performance</a></li>
+    <li><a href="#applications">Applications</a></li>
+    <li><a href="#conclusion">Conclusion</a></li>
+    <li><a href="#references">References</a></li>
+  </ul>
+</nav>
+
+<div class="container">
+
+  <!-- INTRODUCTION -->
+  <section class="section" id="intro">
+    <div class="section-header">
+      <div class="section-num">01</div>
+      <h2>Introduction</h2>
+    </div>
+    <div class="card">
+      <p style="font-size:15px;color:var(--med-gray);line-height:1.8;">
+        The <strong>AI-Based Smart Irrigation and Monitoring System</strong> presents an IoT-based intelligent irrigation and monitoring solution designed to enhance agricultural productivity. The system integrates <strong>Internet of Things (IoT) sensors</strong> and <strong>Artificial Intelligence (AI)</strong> to create an automated, data-driven field environment.
+      </p>
+      <br>
+      <p style="font-size:15px;color:var(--med-gray);line-height:1.8;">
+        A <strong>Raspberry Pi 4</strong> serves as the central edge controller, collecting data from sensors measuring soil moisture, temperature, humidity, and pH levels. A <strong>Convolutional Neural Network (CNN)</strong> model — trained via Jupyter Notebook — is incorporated for early detection of onion plant leaf diseases through manual image input and deep learning inference. All data is visualized via the <strong>ThingsBoard IoT cloud platform</strong>.
+      </p>
+    </div>
+
+    <div class="card-grid">
+      <div class="card-sm"><h4>🌾 Automated Irrigation</h4><p>Soil moisture-triggered pump activation — no manual intervention needed</p></div>
+      <div class="card-sm"><h4>🔬 AI Disease Detection</h4><p>CNN with 96.09% accuracy detects 11 onion diseases from manually provided leaf images</p></div>
+      <div class="card-sm"><h4>🧪 pH & Soil Monitoring</h4><p>Real-time pH and soil moisture data via MCP3008 ADC with analog sensor interfacing</p></div>
+      <div class="card-sm"><h4>📡 Cloud Monitoring</h4><p>ThingsBoard dashboard for real-time remote monitoring and actuation</p></div>
+      <div class="card-sm"><h4>🤖 Agentic AI</h4><p>GPT-4o powered expert system provides voice-first crop advisory</p></div>
+      <div class="card-sm"><h4>🎙️ Voice Interface</h4><p>OpenAI Whisper + TTS for multilingual farmer interaction (Marathi/Hindi/English)</p></div>
+    </div>
+  </section>
+
+  <!-- LITERATURE SURVEY -->
+  <section class="section" id="literature">
+    <div class="section-header">
+      <div class="section-num">02</div>
+      <h2>Literature Survey</h2>
+    </div>
+
+    <div class="lit-paper">
+      <span class="year">2014</span>
+      <strong style="margin-left:10px;">KASR: Keyword-Aware Service Recommendation Method on MapReduce for Big Data (IEEE)</strong>
+      <p style="font-size:13px;color:var(--med-gray);margin-top:6px;">Explored scalable recommendation using Hadoop. Demonstrated importance of scalability in large datasets.</p>
+      <div class="gap">Research Gap: Not applicable for real-time IoT data streams or agricultural sensor networks.</div>
+    </div>
+
+    <div class="lit-paper">
+      <span class="year">2019</span>
+      <strong style="margin-left:10px;">IoT-Based Smart Irrigation Using Soil Moisture Sensors</strong>
+      <p style="font-size:13px;color:var(--med-gray);margin-top:6px;">Basic sensor-based water pump automation. Threshold-driven actuation on Raspberry Pi with limited analytics.</p>
+      <div class="gap">Research Gap: No AI integration, no disease detection, no cloud dashboard or remote monitoring.</div>
+    </div>
+
+    <div class="lit-paper">
+      <span class="year">2020</span>
+      <strong style="margin-left:10px;">Deep CNN for Plant Disease Classification using ResNet-50</strong>
+      <p style="font-size:13px;color:var(--med-gray);margin-top:6px;">High-accuracy disease classification using deep transfer learning. Tested on standard benchmark datasets.</p>
+      <div class="gap">Research Gap: High computational requirements — not suitable for edge devices like Raspberry Pi.</div>
+    </div>
+
+    <div class="lit-paper">
+      <span class="year">2021</span>
+      <strong style="margin-left:10px;">Raspberry Pi Based Greenhouse Automation (Sensor + Actuator)</strong>
+      <p style="font-size:13px;color:var(--med-gray);margin-top:6px;">Controls fans, pumps, and grow lights using basic sensor thresholds. No AI or disease detection.</p>
+      <div class="gap">Research Gap: Manual monitoring still required. No cloud integration, no advisory system.</div>
+    </div>
+
+    <div class="lit-paper">
+      <span class="year">2022</span>
+      <strong style="margin-left:10px;">LLM-based Agentic AI for Agricultural Advisory</strong>
+      <p style="font-size:13px;color:var(--med-gray);margin-top:6px;">GPT-based chat systems for crop advisory, pest identification recommendations.</p>
+      <div class="gap">Research Gap: Standalone system — not integrated with physical IoT sensors or hardware actuation.</div>
+    </div>
+
+    <div class="alert">
+      <strong>Research Gap Identified:</strong> No existing system combines IoT automation + CNN disease detection + Agentic AI advisory in a single unified platform. Our proposed system fills this gap.
+    </div>
+  </section>
+
+  <!-- PROBLEM STATEMENT -->
+  <section class="section" id="problem">
+    <div class="section-header">
+      <div class="section-num">03</div>
+      <h2>Problem Statement &amp; Objectives</h2>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+      <div class="card" style="border-left:5px solid #C62828;">
+        <h3 style="color:#C62828;margin-bottom:12px;">❌ Problem Statement</h3>
+        <ul class="styled">
+          <li>Manual irrigation wastes 40–60% of water due to over/under-watering</li>
+          <li>Plant disease detected late (lab-based) — crops already damaged by then</li>
+          <li>Farmers lack real-time field data for informed decisions</li>
+          <li>High operational cost due to manual labor in field management</li>
+          <li>No affordable expert advisory system for small and marginal farmers</li>
+          <li>Disease identification requires expensive lab tests — no affordable instant solution</li>
+        </ul>
+      </div>
+      <div class="card" style="border-left:5px solid var(--green);">
+        <h3 style="color:var(--dark-green);margin-bottom:12px;">✅ Objectives</h3>
+        <ul class="styled">
+          <li>Automate irrigation using real-time soil moisture and sensor data</li>
+          <li>Detect onion leaf diseases using CNN with ≥95% accuracy via Jupyter-trained model</li>
+          <li>Integrate multiple IoT sensors with ThingsBoard cloud platform</li>
+          <li>Provide GPT-4o powered expert agricultural advisory</li>
+          <li>Handle analog sensor data via MCP3008 ADC over SPI protocol</li>
+          <li>Build voice-first multilingual interface for low-literacy farmers</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- EXISTING SYSTEM -->
+  <section class="section" id="existing">
+    <div class="section-header">
+      <div class="section-num">04</div>
+      <h2>Existing System</h2>
+    </div>
+    <div class="card-grid">
+      <div class="card-sm" style="border-left-color:#C62828;">
+        <h4>🌾 Traditional Manual Irrigation</h4>
+        <p>Farmers water fields based on experience or schedules. No sensor data. Leads to significant water wastage.</p>
+      </div>
+      <div class="card-sm" style="border-left-color:#C62828;">
+        <h4>🔬 Lab-Based Disease Testing</h4>
+        <p>Leaf samples sent to agricultural labs. Results take 3–7 days. By then, disease has spread significantly.</p>
+      </div>
+      <div class="card-sm" style="border-left-color:#C62828;">
+        <h4>📡 Basic IoT Sensor Systems</h4>
+        <p>Only monitor temperature/humidity. No AI decision-making, no disease detection, no expert advice.</p>
+      </div>
+      <div class="card-sm" style="border-left-color:#C62828;">
+        <h4>📱 SMS/Mobile Alert Systems</h4>
+        <p>Send threshold alerts to farmer's phone. No recommendation engine, no autonomous response, no AI.</p>
+      </div>
+    </div>
+    <div class="alert"><strong>Key Limitation:</strong> All existing systems operate in isolation — none combines IoT automation, AI disease detection, expert advisory, renewable power, and cloud monitoring in a single integrated platform.</div>
+  </section>
+
+  <!-- PROPOSED SYSTEM -->
+  <section class="section" id="proposed">
+    <div class="section-header">
+      <div class="section-num">05</div>
+      <h2>Proposed System</h2>
+    </div>
+    <div class="card">
+      <p style="font-size:15px;color:var(--med-gray);margin-bottom:16px;">
+        The proposed system is divided into two main modules:
+      </p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+        <div style="background:var(--dark-green);border-radius:10px;padding:20px;color:white;">
+          <h4 style="color:var(--mint);margin-bottom:10px;">Module 1: Hardware Control &amp; Local GUI</h4>
+          <ul style="padding-left:18px;font-size:13px;line-height:2;">
+            <li>Runs entirely on Raspberry Pi 4</li>
+            <li>Real-time sensor data collection via GPIO + MCP3008 ADC</li>
+            <li>CNN-based disease detection (Tkinter GUI) — manual image input</li>
+            <li>Auto actuation: pump via relay</li>
+            <li>Image preprocessing (OpenCV — Grayscale + Otsu)</li>
+            <li>ThingSpeak data upload for graphs</li>
+          </ul>
+        </div>
+        <div style="background:var(--teal);border-radius:10px;padding:20px;color:white;">
+          <h4 style="color:#E0F7FA;margin-bottom:10px;">Module 2: Advanced Agentic AI (Cloud)</h4>
+          <ul style="padding-left:18px;font-size:13px;line-height:2;">
+            <li>GPT-4o powered expert advisory agent</li>
+            <li>Google Search Tool for medicine identification</li>
+            <li>OpenAI Whisper (Speech-to-Text)</li>
+            <li>TTS Voice output in Marathi/Hindi/English</li>
+            <li>Conversational 24/7 agri-expert chat</li>
+            <li>Kept separate from Pi (resource optimization)</li>
+          </ul>
+        </div>
+      </div>
+      <div class="alert" style="margin-top:16px;">
+        <strong>Why Separate?</strong> Raspberry Pi is an edge device with limited compute. GPT-4o requires high processing power and high-speed internet for API calls. Running it on Pi would cause system lag and could crash the irrigation control loop. This is a deliberate <em>Resource Optimization</em> decision.
+      </div>
+    </div>
+  </section>
+
+  <!-- ARCHITECTURE -->
+  <section class="section" id="architecture">
+    <div class="section-header">
+      <div class="section-num">06</div>
+      <h2>System Architecture</h2>
+    </div>
+    <div class="card">
+      <div style="background:var(--teal);border-radius:8px;padding:16px 20px;margin-bottom:12px;color:white;">
+        <strong>SENSOR LAYER</strong>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;">
+          <span class="tag">Soil Moisture Sensor</span>
+          <span class="tag">DHT11 (Temp+Humidity)</span>
+          <span class="tag">pH Sensor</span>
+          <span class="tag">MCP3008 ADC (SPI)</span>
+        </div>
+      </div>
+      <div style="text-align:center;font-size:22px;color:var(--accent);">⬇</div>
+      <div style="background:var(--green);border-radius:8px;padding:16px 20px;margin-bottom:12px;color:white;">
+        <strong>PROCESSING LAYER</strong>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;">
+          <span class="tag">Raspberry Pi 4</span>
+          <span class="tag">CNN (TensorFlow/Keras)</span>
+          <span class="tag">Python GPIO Scripts</span>
+          <span class="tag">Multi-threading</span>
+          <span class="tag">OpenCV Preprocessing</span>
+        </div>
+      </div>
+      <div style="text-align:center;font-size:22px;color:var(--accent);">⬇</div>
+      <div style="background:var(--dark-green);border-radius:8px;padding:16px 20px;color:white;">
+        <strong>APPLICATION LAYER</strong>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;">
+          <span class="tag">ThingsBoard Cloud Dashboard</span>
+          <span class="tag">Agentic AI (GPT-4o)</span>
+          <span class="tag">Tkinter Local GUI</span>
+          <span class="tag">ThingSpeak Graphs</span>
+          <span class="tag">Voice Interface (Whisper+TTS)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 style="color:var(--dark-green);margin-bottom:14px;">Data Flow</h3>
+      <div class="flow">
+        <div class="flow-step">Sensors (GPIO/SPI)</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step">Raspberry Pi</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step">Threshold Check</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step">Relay → 12V Pump</div>
+      </div>
+      <div class="flow">
+        <div class="flow-step">Manual Image Input</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step">Image Preprocess (OpenCV)</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step">CNN Inference (Jupyter Model)</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step">Disease Alert + GPT-4o Advisory</div>
+      </div>
+      <div class="flow">
+        <div class="flow-step">All Sensor Data</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step">ThingsBoard / ThingSpeak</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step">Remote Dashboard</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CNN MODEL -->
+  <section class="section" id="cnn">
+    <div class="section-header">
+      <div class="section-num">07</div>
+      <h2>CNN Model – Architecture &amp; Design</h2>
+    </div>
+
+    <div class="card">
+      <h4 style="margin-bottom:12px;color:var(--dark-green);">CNN Architecture (CNNModel.py)</h4>
+      <div class="cnn-arch">
+        <div class="cnn-block" style="background:var(--teal);">Input<br>100×100×3</div>
+        <div style="display:flex;align-items:center;color:var(--accent);font-size:18px;">→</div>
+        <div class="cnn-block" style="background:var(--green);">Conv2D<br>32 Filters<br>ReLU</div>
+        <div style="display:flex;align-items:center;color:var(--accent);font-size:18px;">→</div>
+        <div class="cnn-block" style="background:var(--dark-green);">MaxPool<br>2×2</div>
+        <div style="display:flex;align-items:center;color:var(--accent);font-size:18px;">→</div>
+        <div class="cnn-block" style="background:var(--green);">Conv2D<br>64 Filters<br>ReLU</div>
+        <div style="display:flex;align-items:center;color:var(--accent);font-size:18px;">→</div>
+        <div class="cnn-block" style="background:var(--dark-green);">MaxPool<br>2×2</div>
+        <div style="display:flex;align-items:center;color:var(--accent);font-size:18px;">→</div>
+        <div class="cnn-block" style="background:var(--med-gray);">Flatten<br>→ 1D</div>
+        <div style="display:flex;align-items:center;color:var(--accent);font-size:18px;">→</div>
+        <div class="cnn-block" style="background:var(--accent);">Dense<br>256 + Drop<br>0.5</div>
+        <div style="display:flex;align-items:center;color:var(--accent);font-size:18px;">→</div>
+        <div class="cnn-block" style="background:#C62828;">Softmax<br>11 Classes</div>
+      </div>
+    </div>
+
+    <div class="card-grid">
+      <div class="card-sm">
+        <h4>Why CNN over SVM/Random Forest?</h4>
+        <p><strong>Automatic Feature Extraction</strong> — CNN learns features from images automatically. SVM/RF need manual feature engineering.</p>
+      </div>
+      <div class="card-sm">
+        <h4>Spatial Hierarchy</h4>
+        <p>Convolutional layers capture spatial relationships between pixels — crucial for identifying disease patterns in leaf images.</p>
+      </div>
+      <div class="card-sm">
+        <h4>Why ReLU over Sigmoid/Tanh?</h4>
+        <p>Solves <strong>Vanishing Gradient Problem</strong>. Simple calculation saves Pi CPU. Sparse activation ignores noise, keeps important features.</p>
+      </div>
+      <div class="card-sm">
+        <h4>Dropout (0.5)</h4>
+        <p>Randomly deactivates 50% of neurons during training. Prevents overfitting — model generalizes to unseen disease images.</p>
+      </div>
+      <div class="card-sm">
+        <h4>MaxPooling 2×2</h4>
+        <p>Downsampling reduces spatial dimensions. Keeps most important features. Reduces memory load on Raspberry Pi.</p>
+      </div>
+      <div class="card-sm">
+        <h4>Optimizer: SGD (lr=0.01)</h4>
+        <p>Stochastic Gradient Descent with learning rate 0.01. Achieves stable, smooth convergence over 50 epochs.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h4 style="margin-bottom:10px;color:var(--dark-green);">Data Preprocessing & Model Training (Jupyter Notebook)</h4>
+      <ul class="styled">
+        <li>CNN model was built and trained using a <strong>Jupyter Notebook</strong> for interactive experimentation and visualization</li>
+        <li>Initially, webcam was used for image capture — however, webcam image quality was insufficient for reliable CNN predictions</li>
+        <li>Decision taken: <strong>webcam removed</strong>; images are now manually provided directly to the model for disease identification — significantly improving accuracy</li>
+        <li>All images resized to <strong>100×100 pixels</strong> with aspect ratio preservation (no distortion)</li>
+        <li><strong>Black padding</strong> added to maintain original disease pattern proportions</li>
+        <li>Automatic dataset organization using <code>os.walk</code> — mirrors source folder structure</li>
+        <li>Only image files (.jpg, .png) processed; invalid files automatically filtered</li>
+        <li>High-quality JPEG output to preserve disease pattern details</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- AGENTIC AI -->
+  <section class="section" id="ai">
+    <div class="section-header">
+      <div class="section-num">08</div>
+      <h2>Agentic AI – OnionGuard Expert System</h2>
+    </div>
+    <div class="card">
+      <p style="color:var(--med-gray);margin-bottom:18px;font-size:14px;">OnionGuard is not just a disease detector — it is an autonomous <strong>Agri-Expert Agent</strong> powered by GPT-4o, designed to guide farmers from diagnosis to treatment.</p>
+      <div style="display:grid;grid-template-columns:1fr;gap:10px;">
+        <div style="display:flex;gap:16px;align-items:flex-start;">
+          <div style="background:var(--teal);color:white;min-width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;">01</div>
+          <div><strong style="color:var(--dark-green);">Image Perception</strong><br><span style="font-size:13px;color:var(--med-gray);">CNN model identifies disease from 11 classes with 96.09% accuracy. Output: disease name + confidence score.</span></div>
+        </div>
+        <div style="display:flex;gap:16px;align-items:flex-start;">
+          <div style="background:var(--green);color:white;min-width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;">02</div>
+          <div><strong style="color:var(--dark-green);">Autonomous Reasoning</strong><br><span style="font-size:13px;color:var(--med-gray);">GPT-4o analyzes the detection result and generates a professional treatment plan including causes, affected organs, and specific medicines.</span></div>
+        </div>
+        <div style="display:flex;gap:16px;align-items:flex-start;">
+          <div style="background:var(--dark-green);color:white;min-width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;">03</div>
+          <div><strong style="color:var(--dark-green);">Tool Execution</strong><br><span style="font-size:13px;color:var(--med-gray);">Google Search Tool triggered automatically to show real-world images of medicine bottles — helps farmers identify correct products easily.</span></div>
+        </div>
+        <div style="display:flex;gap:16px;align-items:flex-start;">
+          <div style="background:var(--accent);color:white;min-width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;">04</div>
+          <div><strong style="color:var(--dark-green);">Voice-First Interface</strong><br><span style="font-size:13px;color:var(--med-gray);">OpenAI Whisper for speech-to-text + TTS for voice output. Supports Marathi, Hindi, and English — ideal for rural farmers.</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="hardware">
+    <div class="section-header">
+      <div class="section-num">09</div>
+      <h2>Hardware Overview &amp; Sensors</h2>
+    </div>
+    <div class="sensor-grid">
+      <div class="sensor-card">
+        <div class="icon">🖥️</div>
+        <h4>Raspberry Pi 4</h4>
+        <p>Central controller — GPIO interfacing, Python scripts, CNN inference, cloud upload</p>
+      </div>
+      <div class="sensor-card">
+        <div class="icon">🌱</div>
+        <h4>Soil Moisture Sensor</h4>
+        <p>Dual-prong resistance-based probe. Reads via MCP3008 CH1. Triggers pump when below 30%</p>
+      </div>
+      <div class="sensor-card">
+        <div class="icon">🌡️</div>
+        <h4>DHT11 Sensor</h4>
+        <p>Digital Temperature + Humidity sensor. Connected to GPIO 4 via 1-Wire protocol</p>
+      </div>
+      <div class="sensor-card">
+        <div class="icon">⚗️</div>
+        <h4>pH Sensor</h4>
+        <p>BNC connector probe with signal conditioning board. Reads via MCP3008 CH0 over SPI</p>
+      </div>
+      <div class="sensor-card">
+        <div class="icon">🔌</div>
+        <h4>MCP3008 ADC</h4>
+        <p>10-bit, 8-channel ADC IC. Bridges analog sensors to Raspberry Pi over SPI protocol</p>
+      </div>
+      <div class="sensor-card">
+        <div class="icon">💧</div>
+        <h4>Water Pump (Actuator)</h4>
+        <p>12V submersible pump. Activated via GPIO relay based on soil moisture threshold</p>
+      </div>
+      <div class="sensor-card">
+        <div class="icon">⚡</div>
+        <h4>5V Relay Module</h4>
+        <p>Opto-isolated single-channel relay. Acts as electromagnetic switch for 12V pump circuit</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- HARDWARE DEEP DIVE -->
+  <section class="section" id="hardware-deep-dive">
+    <div class="section-header">
+      <div class="section-num">09B</div>
+      <h2>Hardware Interface &amp; Power Management</h2>
+    </div>
+
+    <!-- 1. Architecture Overview -->
+    <div class="card">
+      <h3 style="color:var(--dark-green);margin-bottom:14px;">🏗️ Hardware Architecture Overview</h3>
+      <p style="font-size:14px;color:var(--med-gray);line-height:1.85;margin-bottom:14px;">
+        The <strong style="color:var(--dark-green);">Raspberry Pi 4 Model B</strong> acts as the <em>Master Controller</em> for the entire system. It manages GPIO-based digital sensors, coordinates SPI communication with the ADC IC, runs the CNN inference engine, and handles cloud data publishing — all concurrently via Python multi-threading.
+      </p>
+      <div class="alert">
+        <strong>⚡ Why MCP3008?</strong> Raspberry Pi 4 does <em>not</em> have any built-in Analog-to-Digital Converter (ADC) pins. All its GPIO pins are purely digital. Sensors like the pH probe and Soil Moisture probe produce <strong>analog voltage signals</strong> (0–5V). To read these on the Pi, the <strong>MCP3008 ADC IC</strong> is used — it converts analog input into a 10-bit digital value (0–1023) and sends it to the Pi over the <strong>SPI protocol</strong>.
+      </div>
+      <p style="font-size:14px;color:var(--med-gray);line-height:1.85;margin-top:14px;">
+        The <strong>SPI (Serial Peripheral Interface)</strong> bus uses four dedicated lines: <code>MISO</code> (Master In Slave Out — Pi reads data from ADC), <code>MOSI</code> (Master Out Slave In — Pi sends channel select to ADC), <code>SCK</code> (Serial Clock — Pi drives the clock), and <code>CS/CE</code> (Chip Select — Pi activates MCP3008). This full-duplex synchronous protocol ensures fast, reliable analog data transfer at up to 3.6 MHz.
+      </p>
+    </div>
+
+    <!-- 2. Component Specs Grid -->
+    <h3 style="color:var(--dark-green);margin-bottom:14px;padding-left:4px;">🔩 Detailed Component Specifications</h3>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:16px;margin-bottom:24px;">
+
+      <div style="background:white;border-radius:10px;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,0.08);border-top:4px solid var(--dark-green);">
+        <div style="font-size:2rem;margin-bottom:8px;">🖥️</div>
+        <h4 style="color:var(--dark-green);font-size:14px;margin-bottom:6px;">Raspberry Pi 4 Model B</h4>
+        <p style="font-size:12px;color:var(--med-gray);line-height:1.7;"><strong>RAM:</strong> 4GB LPDDR4 &nbsp;|&nbsp; <strong>CPU:</strong> 1.8GHz Quad-Core ARM<br><strong>Role:</strong> Edge Computing, real-time CNN disease inference, GPIO orchestration, ThingsBoard cloud upload<br><strong>OS:</strong> Raspberry Pi OS (Debian-based)</p>
+      </div>
+
+      <div style="background:white;border-radius:10px;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,0.08);border-top:4px solid var(--teal);">
+        <div style="font-size:2rem;margin-bottom:8px;">🔌</div>
+        <h4 style="color:var(--dark-green);font-size:14px;margin-bottom:6px;">MCP3008 ADC IC</h4>
+        <p style="font-size:12px;color:var(--med-gray);line-height:1.7;"><strong>Resolution:</strong> 10-bit (0–1023) &nbsp;|&nbsp; <strong>Channels:</strong> 8<br><strong>Interface:</strong> SPI (MISO/MOSI/SCK/CS)<br><strong>Role:</strong> Analog-to-Digital bridge for pH sensor (CH0) and Soil Moisture sensor (CH1)</p>
+      </div>
+
+      <div style="background:white;border-radius:10px;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,0.08);border-top:4px solid var(--accent);">
+        <div style="font-size:2rem;margin-bottom:8px;">⚗️</div>
+        <h4 style="color:var(--dark-green);font-size:14px;margin-bottom:6px;">pH Sensor Kit</h4>
+        <p style="font-size:12px;color:var(--med-gray);line-height:1.7;"><strong>Probe:</strong> High-sensitivity BNC Connector<br><strong>Interface Board:</strong> Analog Signal Conditioning Module (converts pH to 0–5V)<br><strong>ADC Channel:</strong> MCP3008 CH0 &nbsp;|&nbsp; <strong>Power:</strong> Dedicated 12V/1A adapter</p>
+      </div>
+
+      <div style="background:white;border-radius:10px;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,0.08);border-top:4px solid var(--green);">
+        <div style="font-size:2rem;margin-bottom:8px;">🌡️</div>
+        <h4 style="color:var(--dark-green);font-size:14px;margin-bottom:6px;">DHT11 / DHT22</h4>
+        <p style="font-size:12px;color:var(--med-gray);line-height:1.7;"><strong>Type:</strong> Digital Temp + Humidity Sensor<br><strong>Protocol:</strong> 1-Wire Digital (GPIO 4 / Pin 7)<br><strong>Role:</strong> Ambient environment monitoring — temperature and humidity readings</p>
+      </div>
+
+      <div style="background:white;border-radius:10px;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,0.08);border-top:4px solid var(--green);">
+        <div style="font-size:2rem;margin-bottom:8px;">🌱</div>
+        <h4 style="color:var(--dark-green);font-size:14px;margin-bottom:6px;">Soil Moisture Probe</h4>
+        <p style="font-size:12px;color:var(--med-gray);line-height:1.7;"><strong>Type:</strong> Dual-prong resistance-based detection<br><strong>Signal:</strong> Analog voltage output (dry = high resistance = high voltage)<br><strong>ADC Channel:</strong> MCP3008 CH1 — real-time soil water content analysis</p>
+      </div>
+
+      <div style="background:white;border-radius:10px;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,0.08);border-top:4px solid var(--accent);">
+        <div style="font-size:2rem;margin-bottom:8px;">⚡</div>
+        <h4 style="color:var(--dark-green);font-size:14px;margin-bottom:6px;">5V Single-Channel Relay</h4>
+        <p style="font-size:12px;color:var(--med-gray);line-height:1.7;"><strong>Type:</strong> Opto-isolated relay module<br><strong>Control:</strong> GPIO 17 (Pin 11) — Digital Output from Pi<br><strong>Function:</strong> Electromagnetic switch — closes/opens the 12V DC pump circuit safely</p>
+      </div>
+
+      <div style="background:white;border-radius:10px;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,0.08);border-top:4px solid var(--teal);">
+        <div style="font-size:2rem;margin-bottom:8px;">💧</div>
+        <h4 style="color:var(--dark-green);font-size:14px;margin-bottom:6px;">Submersible 12V DC Pump</h4>
+        <p style="font-size:12px;color:var(--med-gray);line-height:1.7;"><strong>Voltage:</strong> 12V DC &nbsp;|&nbsp; <strong>Type:</strong> Submersible<br><strong>Power:</strong> Dedicated 12V/2A DC Adapter<br><strong>Control:</strong> Via relay — activated when soil moisture &lt; 30% threshold</p>
+      </div>
+
+    </div>
+
+    <!-- 3. Power Management -->
+    <div class="card" style="border:2px solid var(--accent);">
+      <h3 style="color:var(--accent);margin-bottom:6px;">⚡ Triple-Source Power Management</h3>
+      <p style="font-size:13px;color:var(--med-gray);margin-bottom:18px;">Critical design decision — three fully isolated power sources prevent electrical noise and protect all components.</p>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:18px;">
+        <div style="background:var(--dark-green);border-radius:8px;padding:16px;color:white;">
+          <div style="font-size:1.5rem;margin-bottom:6px;">🔋</div>
+          <strong style="color:var(--mint);font-size:13px;">Pi Power Rail</strong>
+          <p style="font-size:12px;margin-top:6px;opacity:0.9;line-height:1.6;"><strong>5V / 3A</strong> via USB-C<br>Source: Mobile Phone Adapter (5V/3A rated)<br>Powers: Raspberry Pi 4 + GPIO logic + DHT11</p>
+        </div>
+        <div style="background:var(--teal);border-radius:8px;padding:16px;color:white;">
+          <div style="font-size:1.5rem;margin-bottom:6px;">💧</div>
+          <strong style="color:#E0F7FA;font-size:13px;">Actuator Power Rail</strong>
+          <p style="font-size:12px;margin-top:6px;opacity:0.9;line-height:1.6;"><strong>12V / 2A</strong> DC Adapter<br>Dedicated solely to: Water Pump<br>Switched via: Relay module (opto-isolated)</p>
+        </div>
+        <div style="background:var(--accent);border-radius:8px;padding:16px;color:white;">
+          <div style="font-size:1.5rem;margin-bottom:6px;">⚗️</div>
+          <strong style="font-size:13px;">Sensor Power Rail</strong>
+          <p style="font-size:12px;margin-top:6px;opacity:0.9;line-height:1.6;"><strong>12V / 1A</strong> DC Adapter<br>Dedicated solely to: pH Signal Conditioning Module<br>Prevents pump noise from corrupting pH readings</p>
+        </div>
+      </div>
+
+      <div style="background:var(--light-gray);border-radius:8px;padding:16px;border-left:5px solid var(--green);">
+        <strong style="color:var(--dark-green);">🔗 Common Ground (GND) — Essential Design Principle</strong>
+        <p style="font-size:13px;color:var(--med-gray);margin-top:8px;line-height:1.7;">
+          All three power sources share a <strong>Common Ground connection</strong> with the Raspberry Pi's GND pins. This establishes a single voltage reference point across the entire circuit. Without a common ground, analog sensor readings from the MCP3008 would be unreliable — voltage levels measured at the ADC would have no consistent reference, causing incorrect pH and moisture values. Common grounding is the foundation of stable, accurate multi-rail systems.
+        </p>
+      </div>
+    </div>
+
+    <!-- 4. Hardware Flow Diagram -->
+    <div class="card">
+      <h3 style="color:var(--dark-green);margin-bottom:16px;">🔄 Hardware Signal Flow Diagram</h3>
+      <div style="display:flex;align-items:center;flex-wrap:wrap;gap:0;justify-content:center;">
+
+        <div style="background:var(--teal);border-radius:10px;padding:14px 18px;text-align:center;color:white;min-width:130px;">
+          <div style="font-size:1.4rem;">🌱⚗️</div>
+          <div style="font-size:12px;font-weight:700;margin-top:4px;">Analog Sensors</div>
+          <div style="font-size:10px;opacity:0.85;">Soil Moisture + pH</div>
+          <div style="font-size:10px;margin-top:4px;background:rgba(255,255,255,0.2);border-radius:4px;padding:2px 6px;">0–5V Analog</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;padding:0 6px;">
+          <span style="color:var(--accent);font-size:22px;font-weight:900;">→</span>
+          <span style="font-size:10px;color:var(--med-gray);">Analog Voltage</span>
+        </div>
+
+        <div style="background:var(--green);border-radius:10px;padding:14px 18px;text-align:center;color:white;min-width:130px;">
+          <div style="font-size:1.4rem;">🔌</div>
+          <div style="font-size:12px;font-weight:700;margin-top:4px;">MCP3008 ADC</div>
+          <div style="font-size:10px;opacity:0.85;">CH0 = pH, CH1 = Soil</div>
+          <div style="font-size:10px;margin-top:4px;background:rgba(255,255,255,0.2);border-radius:4px;padding:2px 6px;">10-bit: 0–1023</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;padding:0 6px;">
+          <span style="color:var(--accent);font-size:22px;font-weight:900;">→</span>
+          <span style="font-size:10px;color:var(--med-gray);">SPI Protocol</span>
+        </div>
+
+        <div style="background:var(--dark-green);border-radius:10px;padding:14px 18px;text-align:center;color:white;min-width:130px;">
+          <div style="font-size:1.4rem;">🖥️</div>
+          <div style="font-size:12px;font-weight:700;margin-top:4px;">Raspberry Pi 4</div>
+          <div style="font-size:10px;opacity:0.85;">Master Controller</div>
+          <div style="font-size:10px;margin-top:4px;background:rgba(255,255,255,0.2);border-radius:4px;padding:2px 6px;">Python + GPIO</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;padding:0 6px;">
+          <span style="color:var(--accent);font-size:22px;font-weight:900;">→</span>
+          <span style="font-size:10px;color:var(--med-gray);">Digital Output</span>
+        </div>
+
+        <div style="background:var(--accent);border-radius:10px;padding:14px 18px;text-align:center;color:white;min-width:130px;">
+          <div style="font-size:1.4rem;">⚡</div>
+          <div style="font-size:12px;font-weight:700;margin-top:4px;">Relay Module</div>
+          <div style="font-size:10px;opacity:0.85;">GPIO 17 Control</div>
+          <div style="font-size:10px;margin-top:4px;background:rgba(255,255,255,0.2);border-radius:4px;padding:2px 6px;">Opto-isolated</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;padding:0 6px;">
+          <span style="color:var(--accent);font-size:22px;font-weight:900;">→</span>
+          <span style="font-size:10px;color:var(--med-gray);">12V Switched</span>
+        </div>
+
+        <div style="background:#1B5E20;border-radius:10px;padding:14px 18px;text-align:center;color:white;min-width:130px;">
+          <div style="font-size:1.4rem;">💧</div>
+          <div style="font-size:12px;font-weight:700;margin-top:4px;">12V DC Pump</div>
+          <div style="font-size:10px;opacity:0.85;">Irrigation Actuator</div>
+          <div style="font-size:10px;margin-top:4px;background:rgba(255,255,255,0.2);border-radius:4px;padding:2px 6px;">Auto ON/OFF</div>
+        </div>
+
+      </div>
+      <p style="font-size:12px;color:var(--med-gray);text-align:center;margin-top:14px;font-style:italic;">↑ DHT11 connects directly to GPIO 4 (1-Wire digital) — bypasses ADC entirely</p>
+    </div>
+
+    <!-- 5. Interfacing Table -->
+    <div class="card" style="padding:0;overflow:hidden;">
+      <div style="padding:16px 20px 12px;background:var(--dark-green);">
+        <h3 style="color:white;font-size:1rem;">📋 Pin Interfacing Reference Table</h3>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Component</th>
+            <th>Pin / Channel Connection</th>
+            <th>Protocol / Signal Type</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>⚗️ <strong>pH Sensor</strong></td>
+            <td>MCP3008 — CH0 (Channel 0)</td>
+            <td><span style="background:#E3F2FD;color:#1565C0;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:700;">Analog (0–5V)</span></td>
+          </tr>
+          <tr>
+            <td>🌱 <strong>Soil Moisture Probe</strong></td>
+            <td>MCP3008 — CH1 (Channel 1)</td>
+            <td><span style="background:#E3F2FD;color:#1565C0;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:700;">Analog (0–5V)</span></td>
+          </tr>
+          <tr>
+            <td>🌡️ <strong>DHT11 Sensor</strong></td>
+            <td>GPIO 4 — Pin 7 (Physical)</td>
+            <td><span style="background:#E8F5E9;color:#2E7D32;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:700;">Digital — 1-Wire</span></td>
+          </tr>
+          <tr>
+            <td>⚡ <strong>Relay Module</strong></td>
+            <td>GPIO 17 — Pin 11 (Physical)</td>
+            <td><span style="background:#E8F5E9;color:#2E7D32;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:700;">Digital Output (HIGH/LOW)</span></td>
+          </tr>
+          <tr>
+            <td>🔌 <strong>ADC MCP3008</strong></td>
+            <td>SPI0 — MISO/MOSI/SCK/CE0 (Pins 19,21,23,24)</td>
+            <td><span style="background:#FFF3E0;color:#E65100;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:700;">SPI Protocol</span></td>
+          </tr>
+          <tr style="background:var(--light-gray);">
+            <td>💧 <strong>Water Pump</strong></td>
+            <td>Relay COM/NO terminals</td>
+            <td><span style="background:#F3E5F5;color:#6A1B9A;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:700;">12V DC Switched</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </section>
+
+  <!-- PERFORMANCE -->
+  <section class="section" id="performance">
+    <div class="section-header">
+      <div class="section-num">10</div>
+      <h2>Performance Evaluation</h2>
+    </div>
+
+    <div class="stat-row">
+      <div class="stat-box" style="background:var(--green);">
+        <div class="num">96.09%</div>
+        <div class="lbl">Testing Accuracy</div>
+      </div>
+      <div class="stat-box" style="background:var(--teal);">
+        <div class="num">95.82%</div>
+        <div class="lbl">Training Accuracy</div>
+      </div>
+      <div class="stat-box" style="background:var(--dark-green);">
+        <div class="num">0.967</div>
+        <div class="lbl">Macro F1-Score</div>
+      </div>
+      <div class="stat-box" style="background:var(--accent);">
+        <div class="num">11</div>
+        <div class="lbl">Disease Classes</div>
+      </div>
+      <div class="stat-box" style="background:#C62828;">
+        <div class="num">50</div>
+        <div class="lbl">Training Epochs</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h4 style="margin-bottom:12px;color:var(--dark-green);">Classification Report — All 11 Onion Disease Classes</h4>
+      <table>
+        <thead>
+          <tr><th>Disease Class</th><th>Precision</th><th>Recall</th><th>F1-Score</th><th>Support</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Alternaria_D</td><td>0.9412</td><td>0.9067</td><td>0.9236</td><td>300</td></tr>
+          <tr><td>Botrytis Leaf Blight</td><td>0.9868</td><td>0.9967</td><td>0.9917</td><td>300</td></tr>
+          <tr><td>Bulb Blight-D</td><td class="good">1.0000</td><td class="good">1.0000</td><td class="good">1.0000</td><td>394</td></tr>
+          <tr><td>Caterpillar-P</td><td>0.9767</td><td>0.9800</td><td>0.9784</td><td>300</td></tr>
+          <tr><td>Fusarium-D</td><td>0.9245</td><td>0.9494</td><td>0.9368</td><td>336</td></tr>
+          <tr><td>Healthy Leaves</td><td>0.9520</td><td>0.9348</td><td>0.9433</td><td>552</td></tr>
+          <tr><td>Iris Yellow Virus</td><td>0.9150</td><td>0.9419</td><td>0.9283</td><td>396</td></tr>
+          <tr><td>Rust</td><td class="good">1.0000</td><td>0.9953</td><td>0.9976</td><td>213</td></tr>
+          <tr><td>Virosis-D</td><td>0.9966</td><td class="good">1.0000</td><td>0.9983</td><td>296</td></tr>
+          <tr><td>Xanthomonas Leaf Blight</td><td class="good">1.0000</td><td class="good">1.0000</td><td class="good">1.0000</td><td>378</td></tr>
+          <tr><td>Stemphylium Leaf Blight</td><td>0.9438</td><td>0.9333</td><td>0.9385</td><td>360</td></tr>
+          <tr style="background:var(--dark-green);color:white;"><td><strong>Overall Accuracy</strong></td><td>—</td><td>—</td><td><strong>0.9609</strong></td><td><strong>3825</strong></td></tr>
+          <tr style="background:var(--light-gray);"><td><strong>Macro Avg</strong></td><td>0.9670</td><td>0.9671</td><td>0.9670</td><td>3825</td></tr>
+          <tr style="background:var(--light-gray);"><td><strong>Weighted Avg</strong></td><td>0.9615</td><td>0.9609</td><td>0.9611</td><td>3825</td></tr>
+        </tbody>
+      </table>
+      <p style="font-size:13px;color:var(--green);font-style:italic;">✅ All classes achieve F1-Score &gt; 0.92 — confirming model stability and reliability across all categories.</p>
+    </div>
+
+    <div class="card">
+      <h4 style="margin-bottom:12px;color:var(--dark-green);">Graph Interpretation</h4>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+        <div>
+          <h5 style="color:var(--green);margin-bottom:8px;">📈 Accuracy Graph (50 Epochs)</h5>
+          <p style="font-size:13px;color:var(--med-gray);">Both training (blue) and testing (orange) accuracy curves climb steadily and stay close together — proving no overfitting. Model generalizes perfectly to unseen data.</p>
+        </div>
+        <div>
+          <h5 style="color:#C62828;margin-bottom:8px;">📉 Loss Graph (50 Epochs)</h5>
+          <p style="font-size:13px;color:var(--med-gray);">Loss starts high (~2.0 at epoch 0) and drops smoothly toward zero for both train and test sets. Confirms stable learning and successful convergence.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- APPLICATIONS -->
+  <section class="section" id="applications">
+    <div class="section-header">
+      <div class="section-num">11</div>
+      <h2>Applications</h2>
+    </div>
+    <div class="card-grid">
+      <div class="card-sm"><h4>🧅 Onion &amp; Vegetable Farming</h4><p>Automated disease detection and expert advisory for onion and vegetable farmers across Maharashtra and India</p></div>
+      <div class="card-sm"><h4>🌾 Precision Agriculture</h4><p>Data-driven farming decisions using real-time IoT data, reducing water wastage by 40–60%</p></div>
+      <div class="card-sm"><h4>📱 Remote Farm Monitoring</h4><p>Monitor and control entire field remotely via mobile or web dashboard from anywhere, anytime</p></div>
+      <div class="card-sm"><h4>🏫 Agricultural Research</h4><p>CNN dataset and model can be extended to other crops — scalable, generalizable research platform</p></div>
+      <div class="card-sm"><h4>🤖 AI Advisory</h4><p>GPT-4o Agentic AI provides instant expert treatment advice — reducing dependency on costly agronomists</p></div>
+      <div class="card-sm"><h4>🔬 Disease Surveillance</h4><p>Early detection system to prevent crop loss — critical for onion farmers of Nashik and Ahmednagar regions</p></div>
+    </div>
+  </section>
+
+  <!-- COMPARISON TABLE -->
+  <section class="section">
+    <div class="section-header">
+      <div class="section-num">12</div>
+      <h2>Existing vs Proposed System</h2>
+    </div>
+    <div class="card" style="padding:0;overflow:hidden;">
+      <table class="compare-tbl">
+        <thead>
+          <tr><th>Parameter</th><th>Existing System</th><th>Proposed System ✓</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Irrigation Control</td><td class="compare-bad">Manual / Timer-based</td><td class="compare-good">AI + Sensor-triggered Automation</td></tr>
+          <tr><td>Disease Detection</td><td class="compare-bad">Lab (3–7 days)</td><td class="compare-good">CNN 96.09% — seconds</td></tr>
+          <tr><td>Expert Advisory</td><td class="compare-bad">None / Expensive</td><td class="compare-good">GPT-4o Agentic AI — free, instant</td></tr>
+          <tr><td>Analog Sensor Handling</td><td class="compare-bad">Not available on Pi</td><td class="compare-good">MCP3008 ADC via SPI Protocol</td></tr>
+          <tr><td>Remote Monitoring</td><td class="compare-bad">Not available</td><td class="compare-good">ThingsBoard cloud dashboard</td></tr>
+          <tr><td>Voice Interface</td><td class="compare-bad">None</td><td class="compare-good">Whisper + TTS (multilingual)</td></tr>
+          <tr><td>Cost</td><td class="compare-bad">High (labor)</td><td class="compare-good">Low (one-time IoT hardware)</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- CONCLUSION -->
+  <section class="section" id="conclusion">
+    <div class="section-header">
+      <div class="section-num">13</div>
+      <h2>Conclusion</h2>
+    </div>
+    <div class="card" style="background:var(--dark-green);color:white;border:none;">
+      <ul style="padding-left:20px;line-height:2.1;font-size:14.5px;">
+        <li>Successfully built an <strong>integrated IoT + CNN + Agentic AI</strong> system for smart irrigation and field monitoring</li>
+        <li>CNN model achieves <strong>96.09% testing accuracy</strong> across 11 onion disease classes on 12,000 samples — trained via Jupyter Notebook</li>
+        <li>Agentic AI (GPT-4o) provides <strong>expert-level crop advisory</strong> with real-time web search and voice interface</li>
+        <li>Real-time cloud dashboard enables <strong>remote monitoring &amp; automated pump actuation</strong></li>
+        <li>Triple-source power management with <strong>common ground isolation</strong> ensures stable, noise-free sensor readings</li>
+        <li>MCP3008 ADC over SPI enables <strong>analog sensor interfacing</strong> (pH + Soil Moisture) with Raspberry Pi</li>
+        <li>Scalable architecture — easily extendable to other crops and larger farm deployments</li>
+        <li>Patent filed through college — process currently in progress</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- REFERENCES -->
+  <section class="section" id="references">
+    <div class="section-header">
+      <div class="section-num">14</div>
+      <h2>References &amp; Publications</h2>
+    </div>
+    <div class="card">
+      <h4 style="color:var(--dark-green);margin-bottom:12px;">Patent Status</h4>
+      <div class="alert" style="margin:0;">
+        <strong>🏛️ Patent Filed via College:</strong> A patent application for the AI-Based Smart Irrigation and Monitoring System has been filed through Adsul's Technical Campus, Chas, Ahilyanagar. The patent process is currently in progress
+      </div>
+    </div>
+    <div class="card">
+      <h4 style="color:var(--dark-green);margin-bottom:12px;">Key Technical References</h4>
+      <ul class="styled">
+        <li>TensorFlow &amp; Keras Official Documentation — keras.io, tensorflow.org</li>
+        <li>OpenCV Python Documentation — docs.opencv.org</li>
+        <li>OpenAI API Documentation — platform.openai.com/docs</li>
+        <li>ThingsBoard IoT Platform Documentation — thingsboard.io/docs</li>
+        <li>Raspberry Pi GPIO Documentation — raspberrypi.org</li>
+        <li>ThingSpeak IoT Analytics — thingspeak.com/docs</li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <strong>AI-Based Smart Irrigation and Monitoring System</strong><br>
+  B.E. Computer Engineering — Savitribai Phule Pune University (SPPU)<br>
+  Adsul's Technical Campus, Chas, Ahilyanagar<br>
+  Guide: Prof. P. B. Chandane &nbsp;|&nbsp; Project Review III &nbsp;|&nbsp; <span id="footer-date">16 April 2026</span>
+</footer>
+
+</body>
+</html>
